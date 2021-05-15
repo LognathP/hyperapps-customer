@@ -4,30 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
-import com.hyperapps.constants.CustomerQueryConstants;
-import com.hyperapps.constants.HyperAppsConstants;
-import com.hyperapps.constants.LoginQueryConstants;
-import com.hyperapps.constants.OrderQueryConstants;
 import com.hyperapps.constants.RetailerQueryConstants;
 import com.hyperapps.logger.HyperAppsLogger;
-import com.hyperapps.model.BusinessOperatingTimings;
-import com.hyperapps.model.Categories;
-import com.hyperapps.model.CommonData;
-import com.hyperapps.model.Customer;
-import com.hyperapps.model.CustomerAddress;
-import com.hyperapps.model.UserProfile;
-import com.hyperapps.model.DeliveryAreas;
-import com.hyperapps.model.DeliveryInfo;
-import com.hyperapps.model.Login;
-import com.hyperapps.request.AddAddressRequest;
 
 
 @Component

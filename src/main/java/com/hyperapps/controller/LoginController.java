@@ -3,7 +3,6 @@ package com.hyperapps.controller;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +14,8 @@ import com.hyperapps.constants.HyperAppsConstants;
 import com.hyperapps.fcm.PushNotificationService;
 import com.hyperapps.logger.HyperAppsLogger;
 import com.hyperapps.service.CustomerService;
+import com.hyperapps.service.EmailService;
+import com.hyperapps.service.OtpService;
 
 @RestController
 public class LoginController {
@@ -33,6 +34,12 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 	
 	@Autowired
 	CustomerService customerService;
+	
+	@Autowired
+	OtpService otpService;
+
+	@Autowired
+	EmailService emailService;
 
 
 	@PostMapping("/api/retailer/customer/login")
@@ -54,6 +61,26 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 		tokenArray = customerService.getBusinessDeviceToken(customer_id);
 		pushNotificationService.sendPushNotificationWithData(tokenArray
 				,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
+		
+		String mailId = customerService.getMailId(String.valueOf(customer_id));
+		if(mailId != null)
+		{
+			emailService.sendEmail(mailId, HyperAppsConstants.ORDER_PLACE_TITLE, HyperAppsConstants.ORDER_PLACE_BODY);
+		}
+		tokenArray = new ArrayList<String>();
+		tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+		pushNotificationService.sendPushNotificationWithData(tokenArray
+				,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY + customer_id, HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
+	}
+	
+	@PostMapping("/api/sendotp")
+	public void sendOtp(@RequestParam String mobNum) {
+		otpService.sendOtp(mobNum, otpService.generateOTP(mobNum));
+	}
+	
+	@PostMapping("/api/sendmail")
+	public void sendMail(@RequestParam String mobNum) {
+		otpService.sendOtp(mobNum, otpService.generateOTP(mobNum));
 	}
 	
 	

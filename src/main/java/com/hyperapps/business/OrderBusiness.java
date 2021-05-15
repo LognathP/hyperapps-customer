@@ -3,6 +3,7 @@ package com.hyperapps.business;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -285,20 +286,25 @@ public class OrderBusiness {
 				{
 					if(orderService.placeOrder(orderReq))
 					{
-						ArrayList<String> tokenArray = new ArrayList<String>();
-							tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
-						
-						pushNotificationService.sendPushNotificationWithData(tokenArray
-								,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
-						String mailId = customerService.getMailId(String.valueOf(customer_id));
-						if(mailId != null)
-						{
-							emailService.sendEmail(mailId, HyperAppsConstants.ORDER_PLACE_TITLE, HyperAppsConstants.ORDER_PLACE_BODY);
+						try {
+							ArrayList<String> tokenArray = new ArrayList<String>();
+								tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+							
+							pushNotificationService.sendPushNotificationWithData(tokenArray
+									,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
+							String mailId = customerService.getMailId(String.valueOf(customer_id));
+							if(mailId != null)
+							{
+								emailService.sendEmail(mailId, HyperAppsConstants.ORDER_PLACE_TITLE, HyperAppsConstants.ORDER_PLACE_BODY);
+							}
+							tokenArray = new ArrayList<String>();
+							tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+							pushNotificationService.sendPushNotificationWithData(tokenArray
+									,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY + customer_id, HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
+						} catch (Exception e) {
+							LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN MAIL & PUSH NOTIFICATION");
+							e.printStackTrace();
 						}
-						tokenArray = new ArrayList<String>();
-						tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
-						pushNotificationService.sendPushNotificationWithData(tokenArray
-								,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY + customer_id, HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
 						
 						
 						LOGGER.info(this.getClass(),"ORDER PLACED SUCCESSFULLY");
@@ -423,8 +429,14 @@ public class OrderBusiness {
 				ol.setName(js.getString("name"));
 			}
 			orderReq.setLocation(ol);
-			org.json.JSONObject jsb = new org.json.JSONObject(payment_details);
-			orderReq.setPayment_details(jsb.getString("payment_detail"));
+			orderReq.setPayment_details(null);
+			orderReq.setOffer_id(offer_id);
+			if(payment_details != null)
+			{
+				org.json.JSONObject jsb = new org.json.JSONObject(payment_details);
+				orderReq.setPayment_details(jsb.getString("payment_detail"));	
+			}
+			
 		} catch (Exception e) {
 			LOGGER.error(this.getClass(),"ERROR IN DB WHILE setOrderDetails "+e.getMessage().toString());
 			e.printStackTrace();

@@ -1,35 +1,22 @@
-import java.io.FileReader;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.Gson;
-import com.hyperapps.fcm.PushNotificationService;
-import com.hyperapps.logger.ConfigProperties;
-import com.hyperapps.model.BusinessPhone;
-import com.hyperapps.model.DeliveryInfo;
-import com.hyperapps.model.Store;
-import com.hyperapps.service.EmailServiceImpl;
-import com.hyperapps.util.DESEncryptor;
+import com.hyperapps.model.OfferHistoryData;
 
+@Configuration
+@PropertySource("classpath:/application.properties")
 public class Test {
-	 @Autowired
-	    private Environment env;
+	
+	 @Value("${sms.url}")
+	  private String url;
 	
 	public void smsTest()
 	{
@@ -40,18 +27,14 @@ public class Test {
 //
 //	    System.out.println(result);
 		
-		System.out.println(env);
+	
 		
-		String smsUrl = env.getProperty("sms.url")+env.getProperty("sms.username")
-		+env.getProperty("sms.password")+env.getProperty("sms.senderid")
-		+"&phone="+"9965861660"+env.getProperty("sms.login.msg")+"32423"
-		+env.getProperty("sms.priority.ndnd")+env.getProperty("sms.type.normal");
 		
-		System.out.println(smsUrl);
+		System.out.println(url);
 	}
 	public static void main(String[] args) throws Exception {
 		
-			//new Test().smsTest();
+			new Test().smsTest();
 //		System.out.println(DESEncryptor.encrypt("Test@123", "hyperapp123"));
 //		String en = DESEncryptor.encrypt("Test@123", "hyperapp123");
 //		System.out.println(DESEncryptor.decrypt(en, "hyperapp123"));
@@ -145,9 +128,17 @@ public class Test {
 //System.out.println(encoder.encode(st.getBytes()));
 		//new PushNotificationService().sendPushNotificationWithData();
 		//new EmailServiceImpl().sendEmail("lognathparamashivam@gmail.com", "Hi", "Good Afternoon");
-	int age = 10;
-	assert age <= 19 : "Cannot";
-	System.out.println(age);
-
+//	int age = 10;
+//	assert age <= 19 : "Cannot";
+//	System.out.println(age);
+			
+	List<Integer> i = new ArrayList<Integer>();
+	i.add(1);
+	i.add(2);
+	i.add(3);
+	
+	System.out.println(i.toString().replace("[", "(").replace("]", ")"));
+			
+			
 	}
 }

@@ -1,12 +1,13 @@
 package com.hyperapps.model;
 
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
 import lombok.Setter;
+
+
 
 @Getter
 @Setter

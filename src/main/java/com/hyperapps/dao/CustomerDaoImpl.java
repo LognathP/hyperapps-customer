@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import com.google.gson.Gson;
 import com.hyperapps.constants.CustomerQueryConstants;
 import com.hyperapps.constants.HyperAppsConstants;
-import com.hyperapps.constants.StoreQueryConstants;
 import com.hyperapps.logger.HyperAppsLogger;
 import com.hyperapps.model.BusinessOperatingTimings;
 import com.hyperapps.model.BusinessPhone;
@@ -24,7 +23,6 @@ import com.hyperapps.model.CategoryTree;
 import com.hyperapps.model.Child_category;
 import com.hyperapps.model.Customer;
 import com.hyperapps.model.CustomerAddress;
-import com.hyperapps.model.UserProfile;
 import com.hyperapps.model.DeliveryAreas;
 import com.hyperapps.model.OfferHistoryData;
 import com.hyperapps.model.Product;
@@ -33,6 +31,7 @@ import com.hyperapps.model.SliderImagesData;
 import com.hyperapps.model.Store;
 import com.hyperapps.model.Sub_category;
 import com.hyperapps.model.UserDeviceToken;
+import com.hyperapps.model.UserProfile;
 import com.hyperapps.request.AddAddressRequest;
 import com.hyperapps.util.CommonUtils;
 
@@ -830,8 +829,7 @@ public class CustomerDaoImpl implements CustomerDao {
 		ResultSet res = null;
 		PreparedStatement preStmt1 = null;
 		ResultSet res1 = null;
-		List<Product> prodList = new ArrayList<>();
-    	List<Child_category> childCatList = new ArrayList<>();
+		List<Child_category> childCatList = new ArrayList<>();
 
 		try {
 			connection = jdbctemp.getDataSource().getConnection();
@@ -854,9 +852,10 @@ public class CustomerDaoImpl implements CustomerDao {
 				preStmt1.setInt(1, store_id);
 				preStmt1.setInt(2, childCat.getId());
 				res1 = preStmt1.executeQuery();
+				List<Product> prodList = new ArrayList<>();
 				while(res1.next())
-				{
-					Product products = new Product();
+				{				
+					Product products = new Product();		
 					products.setId(res1.getInt("id"));
 					products.setName(res1.getString("name"));
 					products.setCategory_id(res1.getInt("category_id"));
@@ -874,7 +873,7 @@ public class CustomerDaoImpl implements CustomerDao {
 					products.setQuantity(res1.getInt("quantity"));
 					products.setOption1(res1.getString("option1"));
 					products.setOption2(res1.getString("option2"));
-					prodList.add(products);
+					prodList.add(products);					
 				}
 				res1.close();
 				preStmt1.close();
@@ -907,24 +906,18 @@ public class CustomerDaoImpl implements CustomerDao {
 		List<OfferHistoryData> ohl = new ArrayList<OfferHistoryData>();
 		try {
 			connection = jdbctemp.getDataSource().getConnection();
-			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_OFFER_DETAILS);
-			preStmt.setInt(1, storeId);
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_OFFER_USED_COUNT_BY_CUSTOMER);
+			preStmt.setInt(1, customerId);
 			res = preStmt.executeQuery();
 			while (res.next()) {
-				OfferHistoryData oh = new OfferHistoryData();
-				oh.setId(res.getInt(1));
-				oh.setStore_id(res.getString(2));
-				oh.setActive(res.getString(3));
-				oh.setOffer_valid(res.getString(4));
-				oh.setOffer_start_date(res.getString(5));
-				oh.setOffer_type(res.getString(6));
-				oh.setOffer_flat_amount(res.getString(7));
-				oh.setOffer_percentage(res.getString(8));
-				oh.setOffer_description(res.getString(9));
-				oh.setOffer_heading(res.getString(10));
-				oh.setOffer_max_apply_count(res.getInt(11));
-				oh.setOffer_percentage_max_amount(res.getString(12));
-				ohl.add(oh);				
+				if(res.getInt(1) > 0)
+				{
+					ohl = getOnGoingOfferDetailsbyCustomer(storeId,customerId);
+				}
+				else
+				{
+				 ohl = getOnGoingOfferDetailsbyStore(storeId);	
+				}
 			}
 
 		} catch (Exception e) {
@@ -942,6 +935,174 @@ public class CustomerDaoImpl implements CustomerDao {
 		return ohl;
 	}
 	
+	public List<OfferHistoryData> getOnGoingOfferDetailsbyCustomer(int storeId,int customerId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		List<Integer> offerUsed = new ArrayList<Integer>();
+		List<OfferHistoryData> ohl = new ArrayList<OfferHistoryData>();
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_USED_OFFERS_BY_CUSTOMER);
+			preStmt.setInt(1, customerId);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				OfferHistoryData offer = new OfferHistoryData();
+				offer = getUsedOfferHistory(storeId, res.getInt(1), res.getInt(2));
+				offerUsed.add(res.getInt(2)); //To filter out from all Offer Id's
+				if(offer !=null)
+				ohl.add(offer);
+			}
+			ohl = getOfferDetailsNotUsedByCustomer(storeId, ohl,offerUsed);
+		
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getOnGoingOfferDetailsbyCustomer " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getOnGoingOfferDetailsbyCustomer " + e.getMessage());
+			}
+
+		}
+		return ohl;
+	}
+	
+		
+	public OfferHistoryData getUsedOfferHistory(int storeId,int count,int offerId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		OfferHistoryData oh = null;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_OFFER_DETAILS_BYCUSTOMER);
+			preStmt.setInt(1, storeId);
+			preStmt.setInt(2, count);
+			preStmt.setInt(3, offerId);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				oh = new OfferHistoryData();
+				oh.setId(res.getInt(1));
+				oh.setStore_id(res.getString(2));
+				oh.setActive(res.getString(3));
+				oh.setOffer_valid(res.getString(4));
+				oh.setOffer_start_date(res.getString(5));
+				oh.setOffer_type(res.getString(6));
+				oh.setOffer_flat_amount(res.getString(7));
+				oh.setOffer_percentage(res.getString(8));
+				oh.setOffer_description(res.getString(9));
+				oh.setOffer_heading(res.getString(10));
+				oh.setOffer_max_apply_count(res.getInt(11));
+				oh.setOffer_percentage_max_amount(res.getString(12));
+							
+			}
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getUsedOfferHistory " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getUsedOfferHistory " + e.getMessage());
+			}
+
+		}
+		return oh;
+	}
+	
+	public List<OfferHistoryData> getOnGoingOfferDetailsbyStore(int storeId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		OfferHistoryData oh = null;
+		List<OfferHistoryData> ohl = new ArrayList<OfferHistoryData>();
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_OFFER_DETAILS_BYSTORE);
+			preStmt.setInt(1, storeId);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				oh = new OfferHistoryData();
+				oh.setId(res.getInt(1));
+				oh.setStore_id(res.getString(2));
+				oh.setActive(res.getString(3));
+				oh.setOffer_valid(res.getString(4));
+				oh.setOffer_start_date(res.getString(5));
+				oh.setOffer_type(res.getString(6));
+				oh.setOffer_flat_amount(res.getString(7));
+				oh.setOffer_percentage(res.getString(8));
+				oh.setOffer_description(res.getString(9));
+				oh.setOffer_heading(res.getString(10));
+				oh.setOffer_max_apply_count(res.getInt(11));
+				oh.setOffer_percentage_max_amount(res.getString(12));
+				ohl.add(oh);
+			}
+			
+			
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getOnGoingOfferDetailsbyStore " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getOnGoingOfferDetailsbyStore " + e.getMessage());
+			}
+
+		}
+		return ohl;
+	}
+	
+	
+	public List<OfferHistoryData> getOfferDetailsNotUsedByCustomer(int storeId,List<OfferHistoryData> ohl, List<Integer> offerUsed) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		OfferHistoryData oh = null;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_OFFER_DETAILS_NOT_USED + offerUsed.toString().replace("[", "(").replace("]", ")"));
+			LOGGER.debug(this.getClass(), "Query of getOfferDetailsNotUsedByCustomer " + CustomerQueryConstants.GET_OFFER_DETAILS_NOT_USED + offerUsed.toString().replace("[", "(").replace("]", ")"));
+			preStmt.setInt(1, storeId);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				oh = new OfferHistoryData();
+				oh.setId(res.getInt(1));
+				oh.setStore_id(res.getString(2));
+				oh.setActive(res.getString(3));
+				oh.setOffer_valid(res.getString(4));
+				oh.setOffer_start_date(res.getString(5));
+				oh.setOffer_type(res.getString(6));
+				oh.setOffer_flat_amount(res.getString(7));
+				oh.setOffer_percentage(res.getString(8));
+				oh.setOffer_description(res.getString(9));
+				oh.setOffer_heading(res.getString(10));
+				oh.setOffer_max_apply_count(res.getInt(11));
+				oh.setOffer_percentage_max_amount(res.getString(12));
+				ohl.add(oh);
+			}
+			
+			
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getOfferDetailsNotUsedByCustomer " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getOfferDetailsNotUsedByCustomer " + e.getMessage());
+			}
+
+		}
+		return ohl;
+	}
 	@Override
 	public boolean addfeedback(int user_id, String details){
 		Connection connection = null;

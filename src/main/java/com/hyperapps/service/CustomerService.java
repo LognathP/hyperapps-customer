@@ -2,6 +2,7 @@ package com.hyperapps.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.hyperapps.model.Categories;
@@ -9,12 +10,12 @@ import com.hyperapps.model.CategoryTree;
 import com.hyperapps.model.Child_category;
 import com.hyperapps.model.Customer;
 import com.hyperapps.model.CustomerAddress;
-import com.hyperapps.model.UserProfile;
 import com.hyperapps.model.OfferHistoryData;
 import com.hyperapps.model.Product;
 import com.hyperapps.model.PromotionData;
 import com.hyperapps.model.SliderImagesData;
 import com.hyperapps.model.Store;
+import com.hyperapps.model.UserProfile;
 import com.hyperapps.request.AddAddressRequest;
 
 @Service

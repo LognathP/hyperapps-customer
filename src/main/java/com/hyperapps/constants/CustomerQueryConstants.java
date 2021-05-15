@@ -59,7 +59,27 @@ public interface CustomerQueryConstants {
 	String GET_PRODUCT_DETAILS_BY_CATEGORY= "select p.id,p.name,p.category_id,p.description,p.image_path,p.active,i.product_id,i.store_id,i.price,\r\n" + 
 			"i.special_price,i.promotional_price,i.weight,i.color,i.`size`,i.quantity,i.option1,i.option2 from products p,invproducts i where p.id = i.product_id and i.store_id = ? and i.category_id = ?";
 	
-	public String GET_OFFER_DETAILS = "select\r\n" + 
+	public String GET_OFFER_DETAILS_BYCUSTOMER = "select\r\n" + 
+			"	o.id,\r\n" + 
+			"	o.store_id,\r\n" + 
+			"	o.active,\r\n" + 
+			"	o.offer_valid,\r\n" + 
+			"	o.offer_start_date,\r\n" + 
+			"	o.offer_type,\r\n" + 
+			"	o.offer_flat_amount,\r\n" + 
+			"	o.offer_percentage,\r\n" + 
+			"	o.offer_description,\r\n" + 
+			"	o.offer_heading,\r\n" + 
+			"	o.offer_max_apply_count,\r\n" + 
+			"	o.offer_percentage_max_amount\r\n" + 
+			"from\r\n" + 
+			"	offers o\r\n" + 
+			"where\r\n" + 
+			"o.store_id = ?\r\n" + 
+			"	and o.offer_start_date <= current_date\r\n" + 
+			"	and o.offer_valid >= current_date  and o.offer_max_apply_count > ? and o.id = ?";
+	
+	public String GET_OFFER_DETAILS_BYSTORE = "select\r\n" + 
 			"	o.id,\r\n" + 
 			"	o.store_id,\r\n" + 
 			"	o.active,\r\n" + 
@@ -79,6 +99,26 @@ public interface CustomerQueryConstants {
 			"	and o.offer_start_date <= current_date\r\n" + 
 			"	and o.offer_valid >= current_date";
 	
+	public String GET_OFFER_DETAILS_NOT_USED = "select\r\n" + 
+			"	o.id,\r\n" + 
+			"	o.store_id,\r\n" + 
+			"	o.active,\r\n" + 
+			"	o.offer_valid,\r\n" + 
+			"	o.offer_start_date,\r\n" + 
+			"	o.offer_type,\r\n" + 
+			"	o.offer_flat_amount,\r\n" + 
+			"	o.offer_percentage,\r\n" + 
+			"	o.offer_description,\r\n" + 
+			"	o.offer_heading,\r\n" + 
+			"	o.offer_max_apply_count,\r\n" + 
+			"	o.offer_percentage_max_amount\r\n" + 
+			"from\r\n" + 
+			"	offers o\r\n" + 
+			"where\r\n" + 
+			"o.store_id = ?\r\n" + 
+			"	and o.offer_start_date <= current_date\r\n" + 
+			"	and o.offer_valid >= current_date and o.id not in";
+	
 	String ADD_FEEDBACK = "INSERT INTO feedback (message,store_id) VALUES(?,(select store_id from customers where id=?))";
 	
 	String CHECK_DEVICETOKEN_EXISTS = "select count(1) from user_devicetoken where device_token = ?";
@@ -91,5 +131,8 @@ public interface CustomerQueryConstants {
 	
 	public String GET_BUSINESS_DEVICE_TOKEN = "select ud.device_token from customers c,users u,user_devicetoken ud where c.store_id = u.store_id and u.id = ud.user_id and ud.user_type = 1 and c.id = ?";
 
+	public String GET_USED_OFFERS_BY_CUSTOMER = "select count(1) as used,offer_id from offer_order oo where oo.order_id in (select id from orders where customer_id = ?) group by offer_id";
+	
+	public String GET_OFFER_USED_COUNT_BY_CUSTOMER = "select count(1) from offer_order oo where oo.order_id in (select id from orders where customer_id = ?)";
 }
 

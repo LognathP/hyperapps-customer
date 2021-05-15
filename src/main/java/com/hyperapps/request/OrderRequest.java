@@ -2,12 +2,11 @@ package com.hyperapps.request;
 
 import java.util.List;
 
-import javax.validation.constraints.NotBlank;
-
-import org.json.simple.JSONObject;
-
 import lombok.Getter;
 import lombok.Setter;
+
+
+
 
 @Getter
 @Setter

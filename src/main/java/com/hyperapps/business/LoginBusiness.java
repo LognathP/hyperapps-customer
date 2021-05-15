@@ -12,14 +12,12 @@ import com.hyperapps.logger.ConfigProperties;
 import com.hyperapps.logger.HyperAppsLogger;
 import com.hyperapps.model.APIResponse;
 import com.hyperapps.model.Customer;
-import com.hyperapps.model.Login;
 import com.hyperapps.model.Response;
 import com.hyperapps.model.UserDeviceToken;
 import com.hyperapps.service.CustomerService;
 import com.hyperapps.service.LoginService;
 import com.hyperapps.service.OtpService;
 import com.hyperapps.service.UserDeviceTokenService;
-import com.hyperapps.util.DESEncryptor;
 
 @Component
 public class LoginBusiness {
@@ -64,7 +62,7 @@ public class LoginBusiness {
 			customer = customerService.addCustomer(customer);
 		}
 			LOGGER.info(this.getClass(),"GENERATE OTP BUSINESS LAYER");
-			if(otpService.sendOtp(mobileNum, otpService.generateOTP(String.valueOf(customer.getId()))).startsWith("S"))
+			if(otpService.sendOtp(mobileNum, otpService.generateOTP(String.valueOf(customer.getId()))).equals(HttpStatus.OK))
 			{
 				LOGGER.info(this.getClass(),"OTP GENERATED SUCCESSFULLY");
 				

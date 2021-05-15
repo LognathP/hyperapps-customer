@@ -18,19 +18,19 @@ public interface OrderQueryConstants {
 			"and o.customer_id = ca.customer_id \r\n" + 
 			"and o.id = oda.order_id \r\n" + 
 			"and p.id = o.store_id \r\n" + 
-			"and oda.address_type = ca.address_label and o.customer_id = ?";
+			"and oda.address_id = ca.id and o.customer_id = ?";
 	
 	String GET_ORDER_STATUS = "select status from orders where id= ?";
 	
 	String UPDATE_ORDER_STATUS = "update orders set status= ? where id = ?";
 	
-	String INSERT_ORDER_TABLE = "insert into orders (created_at,updated_at,customer_id,store_id,status,order_total,order_grand_total,payment_details )\r\n" + 
-			"values (current_timestamp,current_timestamp,?,?,?,?,?,?)";
+	String INSERT_ORDER_TABLE = "insert into orders (created_at,updated_at,customer_id,store_id,status,order_total,order_grand_total,payment_details,order_details )\r\n" + 
+			"values (current_timestamp,current_timestamp,?,?,?,?,?,?,?)";
 	
 	String INSERT_ORDER_ITEMS_TABLE ="insert into orderitems (order_id,order_item_quantity,price_per_unit,product_id,item_status,total,created_at,updated_at) values\r\n" + 
 			"(?,?,?,?,?,?,current_timestamp,current_timestamp);";
 	
-	String INSERT_ORDER_DELIVERY_TABLE = "insert into order_delivery_address (address_type,location,order_id,created_at,updated_at) values (?,?,?,current_timestamp,current_timestamp);";
+	String INSERT_ORDER_DELIVERY_TABLE = "insert into order_delivery_address (address_type,location,order_id,created_at,updated_at,address_id) values (?,?,?,current_timestamp,current_timestamp,?);";
 	
 	String INSERT_OFFER_ORDER = "insert into offer_order (offer_id,order_id,created_at,updated_at) values (?,?,current_timestamp,current_timestamp)";
 	

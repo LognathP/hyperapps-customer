@@ -9,14 +9,12 @@ import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.hyperapps.constants.HyperAppsConstants;
-import com.hyperapps.constants.LoginQueryConstants;
 import com.hyperapps.constants.OrderQueryConstants;
 import com.hyperapps.constants.StoreQueryConstants;
 import com.hyperapps.logger.HyperAppsLogger;
@@ -25,8 +23,6 @@ import com.hyperapps.model.BusinessPhone;
 import com.hyperapps.model.CommonData;
 import com.hyperapps.model.CustomerInfo;
 import com.hyperapps.model.DeliveryAreas;
-import com.hyperapps.model.DeliveryInfo;
-import com.hyperapps.model.Login;
 import com.hyperapps.model.OfferHistoryData;
 import com.hyperapps.model.Order;
 import com.hyperapps.model.OrderItems;
@@ -76,15 +72,20 @@ public class OrderDaoImpl implements OrderDao {
 				order.setRetailer_id(res.getInt(7));
 				order.setOrder_total(res.getString(8));
 				order.setOrder_grand_total(res.getString(9));
-				PaymentResponse[] payArray = new Gson().fromJson(res.getString(10), PaymentResponse[].class); 
-				for(PaymentResponse pa : payArray) {
-					pay.setErrorCode(pa.getErrorCode());
-					pay.setMessage(pa.getMessage());
-					pay.setResponseCode(pa.getResponseCode());
-					pay.setResult(pa.getResult());
-					pay.setStatus(pa.getStatus());
-					}
-				order.setPayment_details(pay);
+				order.setPayment_details(null);
+				if(res.getString(10)!=null)
+				{
+					PaymentResponse[] payArray = new Gson().fromJson(res.getString(10), PaymentResponse[].class); 
+					for(PaymentResponse pa : payArray) {
+						pay.setErrorCode(pa.getErrorCode());
+						pay.setMessage(pa.getMessage());
+						pay.setResponseCode(pa.getResponseCode());
+						pay.setResult(pa.getResult());
+						pay.setStatus(pa.getStatus());
+						}
+					order.setPayment_details(pay);	
+				}
+				
 				CustomerInfo customerInfo = new CustomerInfo();
 				customerInfo.setCustomer_name(res.getString(11));
 				customerInfo.setCustomers_email_address(res.getString(12));
@@ -119,6 +120,7 @@ public class OrderDaoImpl implements OrderDao {
 					ot.setPrice_per_unit(res2.getString(3));
 					ot.setItem_status(res2.getInt(4));
 					ot.setTotal(res2.getString(5));
+					ot.setName(res2.getString(6));
 					Product p = new Product();
 					p.setName(res2.getString(6));
 					p.setImage_path(res2.getString(7));
@@ -352,6 +354,7 @@ public class OrderDaoImpl implements OrderDao {
 			preStmt.setDouble(4, orderReq.getOrder_total());
 			preStmt.setDouble(5, orderReq.getOrder_grand_total());
 			preStmt.setString(6, ja.toString());
+			preStmt.setString(7, orderReq.getOrder_details());
 			insert = preStmt.executeUpdate();
 			if(insert > 0)
 			{
@@ -412,6 +415,7 @@ public class OrderDaoImpl implements OrderDao {
 		int insert = 0;
 		JSONArray ja = new JSONArray();
 		JSONObject jo = new JSONObject();
+		System.out.println(orderReq.getLocation().toString() + "Place Order Address");
 		jo.put("name", orderReq.getLocation().getName());
 		jo.put("lat", orderReq.getLocation().getLat());
 		jo.put("lng", orderReq.getLocation().getLng());
@@ -422,6 +426,7 @@ public class OrderDaoImpl implements OrderDao {
 			preStmt.setInt(1, 1);
 			preStmt.setString(2, ja.toString());
 			preStmt.setInt(3, orderId);
+			preStmt.setString(4, orderReq.getLocation().getAddress());
 			insert = preStmt.executeUpdate();
 			
 		} catch (Exception e) {

@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,7 +60,7 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 	}
 	@GetMapping("/api/storefront/rootcategory/list")
 	public Object getCategoryList() {
-		Logger.info(this.getClass(),"GET CATEGORIES CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
+		Logger.info(this.getClass(),"GET ROOT CATEGORIES CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
 		return customerBusiness.getCategoryList();
 	}
 	
@@ -75,7 +73,7 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 	@GetMapping("/api/retailer/store/categoryProductTree/{store_id}/{paranetCatgoryId}/{subCategoryId}")
 	public Object getCategoryDetails(@PathVariable ("store_id") int store_id,@PathVariable ("paranetCatgoryId") int paranetCatgoryId,
 			@PathVariable ("subCategoryId") int subCategoryId) {
-		Logger.info(this.getClass(),"GET CATEGORY LIST CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
+		Logger.info(this.getClass(),"GET CHILD CATEGORY LIST CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
 		return customerBusiness.getCategoryDetails(store_id,paranetCatgoryId,subCategoryId);
 	}
 	

@@ -3,7 +3,9 @@ package com.hyperapps.service;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,7 +38,7 @@ public class OtpService {
 
 		 Random random = new Random();
 		 int otp = 100000 + random.nextInt(900000);
-		 otp = 123456;
+		 //otp = 123456;
 		 otpCache.put(key, otp);
 		 return otp;
 		  }
@@ -57,20 +59,22 @@ public class OtpService {
 	 otpCache.invalidate(key);
 	 }
 	
-	public String sendOtp(String mobileNum,int otp)
+	public HttpStatus sendOtp(String mobileNum,int otp)
 	{
-		String smsUrl = configProp.getConfigValue("sms.url")+configProp.getConfigValue("sms.username")
-		+configProp.getConfigValue("sms.password")+configProp.getConfigValue("sms.senderid")
-		+"&phone="+mobileNum+configProp.getConfigValue("sms.login.msg")+otp
-		+configProp.getConfigValue("sms.priority.ndnd")+configProp.getConfigValue("sms.type.normal");
-		
+		String smsUrl = configProp.getConfigValue("sms.url");
+		String apikey = configProp.getConfigValue("sms.key");
+		smsUrl = smsUrl.replace("{key}", apikey).replace("{mobile}", mobileNum).replace("{otp}", String.valueOf(otp));
 		System.out.println(smsUrl);
 		System.out.println("Mobile Number : "+mobileNum);
 		System.out.println("OTP : "+otp);
-//		RestTemplate restTemplate = new RestTemplate();
-//		String result = restTemplate.getForObject(smsUrl, String.class);
-//		System.out.println(result);
-		return "S";
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject(smsUrl, String.class);
+		JSONObject js = new JSONObject(result);
+		System.out.println("SMS Status "+js.get("Status"));
+		if(js.get("Status").toString().equalsIgnoreCase("Success"))
+		return HttpStatus.OK;
+		else
+		return HttpStatus.INTERNAL_SERVER_ERROR;
 	}
 	
 

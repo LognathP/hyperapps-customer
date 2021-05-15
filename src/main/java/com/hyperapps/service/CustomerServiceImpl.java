@@ -2,6 +2,7 @@ package com.hyperapps.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +15,12 @@ import com.hyperapps.model.Child_category;
 import com.hyperapps.model.CommonData;
 import com.hyperapps.model.Customer;
 import com.hyperapps.model.CustomerAddress;
-import com.hyperapps.model.UserProfile;
 import com.hyperapps.model.OfferHistoryData;
 import com.hyperapps.model.Product;
 import com.hyperapps.model.PromotionData;
 import com.hyperapps.model.SliderImagesData;
 import com.hyperapps.model.Store;
+import com.hyperapps.model.UserProfile;
 import com.hyperapps.repository.CustomerRepository;
 import com.hyperapps.request.AddAddressRequest;
 

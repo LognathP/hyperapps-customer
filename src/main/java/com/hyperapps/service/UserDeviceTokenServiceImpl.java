@@ -4,9 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hyperapps.dao.CustomerDao;
-import com.hyperapps.dao.LoginDao;
-import com.hyperapps.logger.HyperAppsLogger;
-import com.hyperapps.model.Login;
 import com.hyperapps.model.UserDeviceToken;
 
 @Component

@@ -1,8 +1,7 @@
 package com.hyperapps.model;
 
-import lombok.Setter;
-
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
