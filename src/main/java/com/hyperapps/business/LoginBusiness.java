@@ -102,6 +102,11 @@ public class LoginBusiness {
 			{
 				userDeviceTokenService.addDeviceToken(ut);
 			}
+			else
+			{
+				userDeviceTokenService.updateDeviceToken(ut);
+			}
+			otpService.clearOTP(String.valueOf(customer_id));
 			LOGGER.info(this.getClass(),"LOGIN CHECK SUCCESS");
 			response.setStatus(HttpStatus.OK.toString());
 			response.setMessage("Login Success");

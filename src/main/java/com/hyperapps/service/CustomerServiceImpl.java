@@ -185,6 +185,17 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 
+	@Override
+	public Store getStoreDetails(int storeId) {
+		return customerDao.getStoreDetails(storeId);
+	}
+	
+	@Override
+	public String getCustomerNameById(int custId) {
+		return customerDao.getCustomerNameById(custId);
+	}
+
+
 	
 
 }

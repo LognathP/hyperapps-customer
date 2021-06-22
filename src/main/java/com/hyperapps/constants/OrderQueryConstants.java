@@ -3,7 +3,7 @@ package com.hyperapps.constants;
 public interface OrderQueryConstants {
 	
 	String GET_ORDER_ITEMS_BYID = "select o2.id,o2.order_item_quantity,o2.price_per_unit,o2.item_status,o2.total,\r\n" + 
-			"p.name,p.image_path from orderitems o2,products p where o2.product_id = p.id and o2.order_id = ?";
+			"p.name,p.image_path,p.description from orderitems o2,products p where o2.product_id = p.id and o2.order_id = ?";
 	
 	String GET_OFFER_DETAILS_BYID = "select o.id,o.offer_heading,o.offer_description,o.offer_percentage,o.offer_flat_amount,o.offer_type,\r\n" + 
 			"	o.offer_start_date,o.offer_valid,o.active,o.store_id from offers o,offer_order oo where o.id = oo.offer_id and oo.order_id = ?";
@@ -33,7 +33,8 @@ public interface OrderQueryConstants {
 	String INSERT_ORDER_DELIVERY_TABLE = "insert into order_delivery_address (address_type,location,order_id,created_at,updated_at,address_id) values (?,?,?,current_timestamp,current_timestamp,?);";
 	
 	String INSERT_OFFER_ORDER = "insert into offer_order (offer_id,order_id,created_at,updated_at) values (?,?,current_timestamp,current_timestamp)";
-	
+
+	String GET_CUSTOMER_ID_BY_ORDERID = "select customer_id from orders where id = ?";
 	
 
 	}

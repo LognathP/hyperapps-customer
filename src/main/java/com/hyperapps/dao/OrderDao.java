@@ -20,5 +20,7 @@ public interface OrderDao {
 	public Store getStoreDetails(int store_id, Store store);
 
 	public boolean placeOrder(OrderRequest orderReq);
+
+	public int getCustomerIdByOrderId(String order_id);
 	
 	}

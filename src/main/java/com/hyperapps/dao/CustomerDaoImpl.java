@@ -490,7 +490,7 @@ public class CustomerDaoImpl implements CustomerDao {
 					if(CommonUtils.distance(Double.parseDouble(store_latitude),
 							Double.parseDouble(store_longitude),
 							Double.parseDouble(df.getLat()),
-							Double.parseDouble(df.getLng()),"K")<10)
+							Double.parseDouble(df.getLng()),"K")<1000)
 					{
 						daList.add(da);
 						store.setDelivery_areas(daList);
@@ -575,6 +575,7 @@ public class CustomerDaoImpl implements CustomerDao {
 				catTree.setId(res.getInt(5));
 				preStmt1 = connection.prepareStatement(CustomerQueryConstants.GET_STORE_PARENT_CATEGORY);
 				preStmt1.setInt(1, catTree.getRootcategory_id());
+				preStmt1.setInt(2, storeId);
 				res1 = preStmt1.executeQuery();
 				List<Sub_category> subCatList = new ArrayList<>();
 				while(res1.next())
@@ -589,6 +590,7 @@ public class CustomerDaoImpl implements CustomerDao {
 					preStmt2 = connection.prepareStatement(CustomerQueryConstants.GET_STORE_CHILD_CATEGORY);
 					preStmt2.setInt(1, catTree.getRootcategory_id());
 					preStmt2.setInt(2, subCat.getParentcategory_id());
+					preStmt2.setInt(3, storeId);
 					res2 = preStmt2.executeQuery();
 					List<Child_category> childCatList = new ArrayList<>();
 					while(res2.next())
@@ -601,6 +603,7 @@ public class CustomerDaoImpl implements CustomerDao {
 						childCat.setName(res2.getString(5));
 						childCat.setImage_path(res2.getString(6));
 						childCat.setIsDummy(res2.getInt(7));
+						childCat.setCategory_id(res2.getInt(1));
 						childCatList.add(childCat);
 					}
 					res2.close();
@@ -654,6 +657,7 @@ public class CustomerDaoImpl implements CustomerDao {
 				for (String prodId : productList) {
 					preStmt1 = connection.prepareStatement(CustomerQueryConstants.GET_PRODUCT_DETAILS_BY_ID);
 					preStmt1.setString(1, prodId);
+					preStmt1.setInt(2, storeId);
 					res1 = preStmt1.executeQuery();
 					while(res1.next())
 					{
@@ -727,6 +731,7 @@ public class CustomerDaoImpl implements CustomerDao {
 				for (String prodId : productList) {
 					preStmt1 = connection.prepareStatement(CustomerQueryConstants.GET_PRODUCT_DETAILS_BY_ID);
 					preStmt1.setString(1, prodId);
+					preStmt1.setInt(2, storeId);
 					res1 = preStmt1.executeQuery();
 					while(res1.next())
 					{
@@ -848,6 +853,7 @@ public class CustomerDaoImpl implements CustomerDao {
 				childCat.setName(res.getString(5));
 				childCat.setImage_path(res.getString(6));
 				childCat.setIsDummy(res.getInt(7));
+				childCat.setCategory_id(res.getInt(1));
 				preStmt1 = connection.prepareStatement(CustomerQueryConstants.GET_PRODUCT_DETAILS_BY_CATEGORY);
 				preStmt1.setInt(1, store_id);
 				preStmt1.setInt(2, childCat.getId());
@@ -1141,7 +1147,7 @@ public class CustomerDaoImpl implements CustomerDao {
 		try {
 			connection = jdbctemp.getDataSource().getConnection();
 			preStmt = connection.prepareStatement(CustomerQueryConstants.CHECK_DEVICETOKEN_EXISTS);
-			preStmt.setString(1, ut.getDevice_token());
+			preStmt.setInt(1, ut.getUser_id());
 			res = preStmt.executeQuery();
 			if (res.next()) {
 				if(res.getInt(1)>0)
@@ -1174,6 +1180,34 @@ public class CustomerDaoImpl implements CustomerDao {
 			preStmt.setString(2, ut.getDevice_token());
 			preStmt.setString(3, ut.getDevice_type());
 			preStmt.setString(4, ut.getUser_type());
+			preStmt.executeUpdate();
+			
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE addDeviceToken " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, null, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB ON addDeviceToken " + e.getMessage());
+			}
+
+		}
+	}
+	
+	@Override
+	public void updateDeviceToken(UserDeviceToken ut) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.UPDATE_DEVICE_TOKEN);
+			preStmt.setString(1, ut.getDevice_token());
+			preStmt.setString(2, ut.getDevice_type());
+			preStmt.setString(3, ut.getUser_type());
+			preStmt.setInt(4, ut.getUser_id());
 			preStmt.executeUpdate();
 			
 
@@ -1280,6 +1314,112 @@ public class CustomerDaoImpl implements CustomerDao {
 
 		}
 		return token;
+	}
+
+	@Override
+	public Store getStoreDetails(int storeId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		List<DeliveryAreas> daList = new ArrayList<>();
+		List<BusinessPhone> bpList = new ArrayList<>();
+		List<BusinessOperatingTimings> boList = new ArrayList<>();
+		Store store = new Store();
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_STORE_DETAILS);
+			preStmt.setInt(1, storeId);
+			res = preStmt.executeQuery();
+			while(res.next()) {
+				Gson gson = new Gson(); 
+				DeliveryAreas[] userArray = gson.fromJson(res.getString("delivery_areas"), DeliveryAreas[].class); 
+				for(DeliveryAreas df : userArray) {
+					DeliveryAreas da = new DeliveryAreas();
+					da.setName(df.getName());
+					da.setLat(df.getLat());
+					da.setLng(df.getLng());
+					daList.add(da);
+				}					
+						store.setDelivery_areas(daList);
+						store.setStore_id(res.getInt("id"));
+						store.setBusiness_name(res.getString("business_name"));
+						store.setBusiness_short_desc(res.getString("business_short_desc"));
+						store.setUser_image(res.getString("user_image"));
+						store.setBusiness_long_desc(res.getString("business_long_desc"));
+						store.setRunning_status(res.getInt("status"));
+						store.setPhysical_store_status(res.getInt("physical_store_status"));
+						store.setPhysical_store_address(res.getString("physical_store_address"));
+						BusinessPhone[] phoneArray = new Gson().fromJson(res.getString("business_phone"), BusinessPhone[].class); 
+						for(BusinessPhone bp : phoneArray) {
+							BusinessPhone bph = new BusinessPhone();
+							bph.setPhone(bp.getPhone());
+							bpList.add(bph);
+						}
+						store.setBusiness_phone(bpList);
+						store.setBusiness_operating_mode(res.getInt("business_operating_mode"));
+						BusinessOperatingTimings[] operationArray = new Gson().fromJson(res.getString("business_operating_timings"), BusinessOperatingTimings[].class); 
+						for(BusinessOperatingTimings bop : operationArray) {
+							BusinessOperatingTimings bopt = new BusinessOperatingTimings();
+							bopt.setDay(bop.getDay());
+							bopt.setFrom(bop.getFrom());
+							bopt.setTo(bop.getTo());
+							boList.add(bopt);
+						}
+						store.setBusiness_operating_timings(boList);
+						store.setHome_delivery_status(res.getInt("home_delivery"));
+						store.setMin_order_amount(res.getString("min_order_amount"));
+						store.setDelivery_charge(res.getString("delivery_charge"));
+						store.setStore_tax_status(res.getString("store_tax_status"));
+						store.setStore_tax_gst(res.getString("store_tax_gst"));
+						store.setStore_tax_percentage(res.getString("store_tax_percentage"));
+						store.setStore_status(res.getString("status"));
+						store.setFree_delivery_above(res.getString("free_delivery_above"));
+				
+			}
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getStoreDetails " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB ON getStoreDetails " + e.getMessage());
+			}
+
+		}
+		return store;
+	}
+
+	@Override
+	public String getCustomerNameById(int custId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		String name = null;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_CUSTOMER_NAME);
+			preStmt.setInt(1, custId);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				name = res.getString(1);
+			}
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getCustomerNameById " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getCustomerNameById " + e.getMessage());
+			}
+
+		}
+		return name;
 	}
 
 	

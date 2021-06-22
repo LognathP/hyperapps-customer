@@ -30,7 +30,7 @@ public interface CustomerQueryConstants {
 	
 	String GET_CUSTOMER_PROFILE = "SELECT id, customers_gender, customers_firstname, customers_lastname, DATE_FORMAT(customers_dob,'%Y-%m-%d') as customers_dob, customers_email_address, customers_default_address_id, customers_telephone, customers_fax, customers_password, customers_newsletter FROM customers WHERE id=?";
 	
-	String UPDATED_CUSTOMER_PROFILE = "update customers set customers_firstname=?,customers_lastname=?,customers_dob=STR_TO_DATE(?,'%Y-%m-%d'),customers_email_address=?,customers_telephone=?,customers_default_address_id=?,customers_fax=?,customers_password=?,customers_newsletter=?,customers_gender=? where id = ?";
+	String UPDATED_CUSTOMER_PROFILE = "update customers set customers_firstname=?,store_id=?,customers_dob=STR_TO_DATE(?,'%Y-%m-%d'),customers_email_address=?,customers_telephone=?,customers_default_address_id=?,customers_fax=?,customers_password=?,customers_newsletter=?,customers_gender=? where id = ?";
 
 	String GET_STORE_DETAILS = "select p.id,p.business_name,p.business_short_desc,p.user_image,p.business_long_desc,p.business_operating_mode,p.physical_store_status,\r\n" + 
 			"p.physical_store_address,p.business_phone,p.business_operating_mode,p.business_operating_timings,d.delivery_areas,d.home_delivery,\r\n" + 
@@ -39,14 +39,14 @@ public interface CustomerQueryConstants {
 	
 	String GET_STORE_ROOT_CATEGORY="SELECT r.name,r.image_path,r.active,i.rootcategory_id,i.id FROM rootcategories r,invrootcategories i where r.id = i.rootcategory_id and i.store_id = ? and i.active = ?";
 	
-	String GET_STORE_PARENT_CATEGORY="SELECT p.id,p.rootcategory_id,ic.parentcategory_id,p.name,p.image_path,p.active from parentcategories p,invparentcategories ic where p.id = ic.parentcategory_id and p.rootcategory_id = ic.rootcategory_id and p.rootcategory_id = ? and ic.active = 1";
+	String GET_STORE_PARENT_CATEGORY="SELECT p.id,p.rootcategory_id,ic.parentcategory_id,p.name,p.image_path,p.active from parentcategories p,invparentcategories ic where p.id = ic.parentcategory_id and p.rootcategory_id = ic.rootcategory_id and p.rootcategory_id = ? and ic.active = 1 and ic.store_id = ?";
 	
-	String GET_STORE_CHILD_CATEGORY="select c.id,c.rootcategory_id,c.parentcategory_id,c.active,c.name,c.image_path,c.IsDummy from childcategories c,invchildcategories i where c.rootcategory_id = i.rootcategory_id and c.parentcategory_id = i.parentcategory_id and c.rootcategory_id = ? and  c.parentcategory_id = ? and c.active = 1 ";
+	String GET_STORE_CHILD_CATEGORY="select c.id,c.rootcategory_id,c.parentcategory_id,c.active,c.name,c.image_path,c.IsDummy from childcategories c,invchildcategories i where c.rootcategory_id = i.rootcategory_id and c.parentcategory_id = i.parentcategory_id and c.rootcategory_id = ? and  c.parentcategory_id = ? and c.active = 1  and i.store_id = ?";
 	
 	String GET_SLIDER_DETAILS = "select store_id,image_path,productids from slider_image where store_id=?";
 	
 	String GET_PRODUCT_DETAILS_BY_ID = "select p.id,p.name,p.category_id,p.description,p.image_path,p.active,i.product_id,i.store_id,i.price,\r\n" + 
-			"i.special_price,i.promotional_price,i.weight,i.color,i.`size`,i.quantity,i.option1,i.option2 from products p,invproducts i where p.id = i.product_id and p.id = ?";
+			"i.special_price,i.promotional_price,i.weight,i.color,i.`size`,i.quantity,i.option1,i.option2 from products p,invproducts i where p.id = i.product_id and p.id = ? and i.store_id = ?";
 	
 	String GET_PROMOTIONS_DETAILS = "select p.promotionurl,p.promotion_title,p.discount_percentage,p.image,p.store_id,p.productids from promotions p where p.store_id = ?";
 
@@ -121,9 +121,11 @@ public interface CustomerQueryConstants {
 	
 	String ADD_FEEDBACK = "INSERT INTO feedback (message,store_id) VALUES(?,(select store_id from customers where id=?))";
 	
-	String CHECK_DEVICETOKEN_EXISTS = "select count(1) from user_devicetoken where device_token = ?";
+	String CHECK_DEVICETOKEN_EXISTS = "select count(1) from user_devicetoken where user_id = ?";
 	
 	String ADD_DEVICETOKEN = "INSERT INTO user_devicetoken (user_id, device_token, device_type, user_type, created_at, updated_at) VALUES(?, ?, ?, ?, current_timestamp, current_timestamp)";
+	
+	String UPDATE_DEVICE_TOKEN = "UPDATE user_devicetoken SET device_token=?, device_type=?, user_type=?,updated_at=current_timestamp WHERE user_id=?";
 	
 	public String GET_DEVICE_TOKEN = "select device_token from user_devicetoken where user_id = ?";
 	
@@ -134,5 +136,7 @@ public interface CustomerQueryConstants {
 	public String GET_USED_OFFERS_BY_CUSTOMER = "select count(1) as used,offer_id from offer_order oo where oo.order_id in (select id from orders where customer_id = ?) group by offer_id";
 	
 	public String GET_OFFER_USED_COUNT_BY_CUSTOMER = "select count(1) from offer_order oo where oo.order_id in (select id from orders where customer_id = ?)";
+	
+	public String GET_CUSTOMER_NAME = "select c.customers_firstname from customers c where c.id = ?";
 }
 

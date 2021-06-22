@@ -121,9 +121,12 @@ public class OrderDaoImpl implements OrderDao {
 					ot.setItem_status(res2.getInt(4));
 					ot.setTotal(res2.getString(5));
 					ot.setName(res2.getString(6));
+					ot.setImage_path(res2.getString(7));
+					ot.setDescription(res2.getString(8));
 					Product p = new Product();
 					p.setName(res2.getString(6));
 					p.setImage_path(res2.getString(7));
+					p.setDescription(res2.getString(8));
 					ot.setProduct_info(p);
 					odList.add(ot);				
 				}
@@ -474,4 +477,33 @@ public class OrderDaoImpl implements OrderDao {
 	}
 	
 		
+	@Override
+	public int getCustomerIdByOrderId(String order_id) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		int customerId = 0;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(OrderQueryConstants.GET_CUSTOMER_ID_BY_ORDERID);
+			preStmt.setString(1, order_id);
+			res = preStmt.executeQuery();
+			while (res.next()) {
+				customerId = res.getInt(1);
+			}
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getCustomerIdByOrderId " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB getCustomerIdByOrderId " + e.getMessage());
+			}
+
+		}
+		return customerId;
+	}
 }

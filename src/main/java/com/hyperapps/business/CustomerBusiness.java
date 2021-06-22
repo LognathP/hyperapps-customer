@@ -286,6 +286,8 @@ public class CustomerBusiness {
 		cpf.setCustomers_password(customers_password);
 		cpf.setCustomers_newsletter(CommonUtils.emptyIntToZero(customers_newsletter));	
 		cpf.setId(id);
+		LOGGER.info(this.getClass(), "CUSTOMER PROFILE DETAILS");
+		LOGGER.info(this.getClass(), cpf.toString());
 		if (customerService.updateCustomerProfile(cpf)) {
 			LOGGER.info(this.getClass(), "CUSTOMER PROFILE UPDATED SUCCESSFULLY");
 			response.setStatus(HttpStatus.OK.toString());
@@ -305,13 +307,13 @@ public class CustomerBusiness {
 
 	@SuppressWarnings("unchecked")
 	public Object findNearbyStore(int store_id, String store_latitude, String store_longitude) {
-		store_latitude = "0.0"; //Added for Testing
-		store_longitude = "0.0"; //Added for Testing
+		//store_latitude = "0.0"; //Added for Testing
+		//store_longitude = "0.0"; //Added for Testing
 		Store store = customerService.getStoreDeliverAreas(store_id,store_latitude,store_longitude);
 		LOGGER.info(this.getClass(),"STORE DETAILS IN FIND NEARBY "+store.toString());
 		if(store.getStore_id()!=0)
 		{
-					LOGGER.error(this.getClass(),"STORE LOCATION AVAILABLITY FOUND");
+					LOGGER.info(this.getClass(),"STORE LOCATION AVAILABLITY FOUND");
 					response.setStatus(HttpStatus.OK.toString());
 					response.setMessage("Store found !!");
 					response.setError(HyperAppsConstants.RESPONSE_FALSE);
@@ -509,5 +511,31 @@ public class CustomerBusiness {
 			}
 		
 		return respEntity;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Object getStoreDetails(int storeId) {
+		Store store = customerService.getStoreDetails(storeId);
+		LOGGER.info(this.getClass(),"STORE DETAILS IN GET STORE"+store.toString());
+		if(store.getStore_id()!=0)
+		{
+					LOGGER.debug(this.getClass(),"STORE DETAILS FOUND");
+					response.setStatus(HttpStatus.OK.toString());
+					response.setMessage("Store found !!");
+					response.setError(HyperAppsConstants.RESPONSE_FALSE);
+					response.setData(store);
+					apiResponse.setResponse(response);
+					return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);					
+		}
+		else
+		{
+			LOGGER.error(this.getClass(),"STORE DETAILS NOT FOUND");
+			response.setStatus(HttpStatus.NOT_FOUND.toString());
+			response.setMessage("Store details not Found");
+			response.setError(HyperAppsConstants.RESPONSE_TRUE);
+			response.setData(null);
+			apiResponse.setResponse(response);
+			return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);
+		}
 	}
 }

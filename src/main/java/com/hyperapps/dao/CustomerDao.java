@@ -70,4 +70,10 @@ public interface CustomerDao {
 
 	public ArrayList<String> getBusinessDeviceToken(String custId);
 
+	public Store getStoreDetails(int storeId);
+
+	void updateDeviceToken(UserDeviceToken ut);
+
+	public String getCustomerNameById(int custId);
+
 	}

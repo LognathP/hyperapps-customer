@@ -100,6 +100,7 @@ public class OrderBusiness {
 		{
 			if(orderService.updateOrderStatus(order_id,order_status))
 			{
+				sendNotificationsUpdateOrder(orderService.getCustomerIdByOrderId(order_id), order_status);
 				LOGGER.info(this.getClass(),"ORDER CANCELLED SUCCESSFULLY");
 				response.setStatus(HttpStatus.OK.toString());
 				response.setMessage("Order Cancelled Successfully");
@@ -131,85 +132,6 @@ public class OrderBusiness {
 	}
 
 	
-
-//	public Object updateOrderStatus(String order_id, int orderAccepted) {
-//		if(orderAccepted == 0)
-//		orderAccepted = HyperAppsConstants.ORDER_CANCELED_BY_CUSTOMER;
-//		
-//		if(orderAccepted == HyperAppsConstants.ORDER_ACCEPTED)
-//		{
-//			LOGGER.info(this.getClass(),"RETAILER ACCEPT ORDER BUSINESS LAYER");
-//			if(orderService.getOrderStatus(order_id) == HyperAppsConstants.ORDER_CANCELED_BY_CUSTOMER || 
-//					orderService.getOrderStatus(order_id) == HyperAppsConstants.ORDER_CANCELED_BY_RETAILER)
-//			{
-//				if(orderService.updateOrderStatus(order_id,orderAccepted))
-//				{
-//					LOGGER.info(this.getClass(),"ORDER ACCEPTED SUCCESSFULLY");
-//					response.setStatus(HttpStatus.OK.toString());
-//					response.setMessage("Order Cancelled Successfully");
-//					response.setError(HyperAppsConstants.RESPONSE_FALSE);
-//					apiResponse.setResponse(response);
-//					return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);
-//				}
-//				else
-//				{
-//					LOGGER.error(this.getClass(),"ORDER ACCEPTANCE FAILED");
-//					response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-//					response.setMessage("Order Cancellation Failed");
-//					response.setError(HyperAppsConstants.RESPONSE_TRUE);
-//					apiResponse.setResponse(response);
-//					return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);
-//				}
-//				
-//			}
-//			else
-//			{
-//				LOGGER.error(this.getClass(),"ORDER ACCEPTANCE FAILED");
-//				response.setStatus(HttpStatus.NOT_ACCEPTABLE.toString());
-//				response.setMessage("Order already Cancelled");
-//				response.setError(HyperAppsConstants.RESPONSE_TRUE);
-//				apiResponse.setResponse(response);
-//				return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);	
-//			}
-//		}
-//		else if(orderAccepted == HyperAppsConstants.ORDER_COMPLETED)
-//		{
-//			LOGGER.info(this.getClass(),"RETAILER COMPLETE ORDER BUSINESS LAYER");
-//			if(orderService.getOrderStatus(order_id) == HyperAppsConstants.ORDER_ACCEPTED)
-//			{
-//				if(orderService.updateOrderStatus(order_id,orderAccepted))
-//				{
-//					LOGGER.info(this.getClass(),"ORDER COMPLETED SUCCESSFULLY");
-//					response.setStatus(HttpStatus.OK.toString());
-//					response.setMessage("Order Completed Successfully");
-//					response.setError(HyperAppsConstants.RESPONSE_FALSE);
-//					apiResponse.setResponse(response);
-//					return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);					}
-//				else
-//				{
-//					LOGGER.error(this.getClass(),"ORDER COMPLETION FAILED");
-//					response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-//					response.setMessage("Order Completion Failed");
-//					response.setError(HyperAppsConstants.RESPONSE_TRUE);
-//					apiResponse.setResponse(response);
-//					return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);	
-//				}
-//				
-//			}
-//			else
-//			{
-//				LOGGER.error(this.getClass(),"ORDER ACCEPTANCE FAILED");
-//				response.setStatus(HttpStatus.NOT_ACCEPTABLE.toString());
-//				response.setMessage("Order already Completed");
-//				response.setError(HyperAppsConstants.RESPONSE_TRUE);
-//				apiResponse.setResponse(response);
-//				return new ResponseEntity<Object>(apiResponse,HttpStatus.OK);	
-//			}
-//		}
-//		return new ResponseEntity<Object>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-//
-//	}
-	
 	public Object updateOrderStatus(String order_id, int orderAccepted) {
 		if(orderAccepted == 0)
 		orderAccepted = HyperAppsConstants.ORDER_CANCELED_BY_CUSTOMER;
@@ -218,11 +140,11 @@ public class OrderBusiness {
 			LOGGER.info(this.getClass(),"RETAILER ACCEPT ORDER BUSINESS LAYER");
 			int orderStat = orderService.getOrderStatus(order_id);
 			if(orderStat != HyperAppsConstants.ORDER_CANCELED_BY_CUSTOMER || 
-					orderStat != HyperAppsConstants.ORDER_CANCELED_BY_CUSTOMER)
+					orderStat != HyperAppsConstants.ORDER_CANCELED_BY_RETAILER)
 			{
 				if(orderService.updateOrderStatus(order_id,orderAccepted))
 				{
-					LOGGER.info(this.getClass(),"ORDER ACCEPTED SUCCESSFULLY");
+					LOGGER.info(this.getClass(),"ORDER UPDATED SUCCESSFULLY");
 					response.setStatus(HttpStatus.OK.toString());
 					if(orderAccepted == 0)
 					{
@@ -232,6 +154,8 @@ public class OrderBusiness {
 					{
 						message = "Order Updated Successfully";
 					}
+					
+					sendNotificationsUpdateOrder(orderService.getCustomerIdByOrderId(order_id), orderAccepted);
 					response.setMessage(message);
 					response.setError(HyperAppsConstants.RESPONSE_FALSE);
 					apiResponse.setResponse(response);
@@ -274,7 +198,8 @@ public class OrderBusiness {
 		store = orderService.getStoreDetails(store_id,store);
 		LOGGER.info(this.getClass(),"==========STORE DETAILS=====");
 		LOGGER.info(this.getClass(),String.valueOf(store.getStore_id()) + "--- "+store.toString());
-		
+		LOGGER.info(this.getClass(),"==========CUSTOMER ID=====");
+		LOGGER.info(this.getClass(),String.valueOf(customer_id));
 		if(store.getStore_id()!=0)
 		{
 			store = validateDeliveryTime(store);
@@ -286,27 +211,7 @@ public class OrderBusiness {
 				{
 					if(orderService.placeOrder(orderReq))
 					{
-						try {
-							ArrayList<String> tokenArray = new ArrayList<String>();
-								tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
-							
-							pushNotificationService.sendPushNotificationWithData(tokenArray
-									,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
-							String mailId = customerService.getMailId(String.valueOf(customer_id));
-							if(mailId != null)
-							{
-								emailService.sendEmail(mailId, HyperAppsConstants.ORDER_PLACE_TITLE, HyperAppsConstants.ORDER_PLACE_BODY);
-							}
-							tokenArray = new ArrayList<String>();
-							tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
-							pushNotificationService.sendPushNotificationWithData(tokenArray
-									,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY + customer_id, HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
-						} catch (Exception e) {
-							LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN MAIL & PUSH NOTIFICATION");
-							e.printStackTrace();
-						}
-						
-						
+						sendNotificationsPlaceOrder(customer_id);
 						LOGGER.info(this.getClass(),"ORDER PLACED SUCCESSFULLY");
 						response.setStatus(HttpStatus.OK.toString());
 						response.setMessage("Order Placed Successfully");
@@ -431,7 +336,7 @@ public class OrderBusiness {
 			orderReq.setLocation(ol);
 			orderReq.setPayment_details(null);
 			orderReq.setOffer_id(offer_id);
-			if(payment_details != null)
+			if(payment_details != null | payment_details.length()>0)
 			{
 				org.json.JSONObject jsb = new org.json.JSONObject(payment_details);
 				orderReq.setPayment_details(jsb.getString("payment_detail"));	
@@ -446,4 +351,73 @@ public class OrderBusiness {
 		
 	}
 		
+	public void sendNotificationsPlaceOrder(int customer_id)
+	{
+		try {
+			ArrayList<String> tokenArray = new ArrayList<String>();
+				tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+			LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+			LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+			pushNotificationService.sendPushNotificationWithData(tokenArray
+					,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
+			
+			
+			tokenArray = new ArrayList<String>();
+			tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+			LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+			LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+			pushNotificationService.sendPushNotificationWithData(tokenArray
+					,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY +" "+customerService.getCustomerNameById(customer_id), HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
+			
+		} catch (Exception e) {
+			LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN MAIL & PUSH NOTIFICATION");
+			e.printStackTrace();
+		}	
+	}
+	
+
+	public void sendNotificationsUpdateOrder(int customer_id,int orderStat)
+	{
+		try {
+			String message = null;
+			switch(orderStat)
+			{
+			case 2:
+			message = HyperAppsConstants.ORDER_UPDATE_PROCESSED;
+			break;
+			case 3:
+			message = HyperAppsConstants.ORDER_UPDATE_CONFIRMED;
+			break;
+			case 4:
+			message = HyperAppsConstants.ORDER_UPDATE_COMPLETED;
+			break;
+			case 5:
+			message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_CUSTOMER;
+			break;
+			case 6:
+			message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_RETAILER;
+			break;
+			}
+		
+			
+			ArrayList<String> tokenArray = new ArrayList<String>();
+				tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+			LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+			LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+			pushNotificationService.sendPushNotificationWithData(tokenArray
+					,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
+			
+			
+			tokenArray = new ArrayList<String>();
+			tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+			LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+			LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+			pushNotificationService.sendPushNotificationWithData(tokenArray
+					,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
+			
+		} catch (Exception e) {
+			LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN UPDATE ORDER PUSH NOTIFICATION");
+			e.printStackTrace();
+		}	
+	}
 }

@@ -58,15 +58,14 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 	@PostMapping("/api/push")
 	public void push(@RequestParam String customer_id) {
 		ArrayList<String> tokenArray = new ArrayList<String>();
-		tokenArray = customerService.getBusinessDeviceToken(customer_id);
-		pushNotificationService.sendPushNotificationWithData(tokenArray
-				,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
-		
-		String mailId = customerService.getMailId(String.valueOf(customer_id));
-		if(mailId != null)
-		{
-			emailService.sendEmail(mailId, HyperAppsConstants.ORDER_PLACE_TITLE, HyperAppsConstants.ORDER_PLACE_BODY);
-		}
+		tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+	pushNotificationService.sendPushNotificationWithData(tokenArray
+			,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_UPDATE_TITLE);
+	}
+	
+	@PostMapping("/api/push/business")
+	public void pushBusinessApp(@RequestParam String customer_id) {
+		ArrayList<String> tokenArray = new ArrayList<String>();		
 		tokenArray = new ArrayList<String>();
 		tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
 		pushNotificationService.sendPushNotificationWithData(tokenArray

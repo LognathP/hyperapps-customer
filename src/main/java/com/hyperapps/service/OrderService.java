@@ -21,6 +21,8 @@ public interface OrderService {
 	
 	public Store getStoreDetails(int store_id, Store store);
 	
+	public int getCustomerIdByOrderId(String order_id);
+	
 
 	
 }

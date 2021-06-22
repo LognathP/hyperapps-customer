@@ -63,4 +63,8 @@ public interface CustomerService {
 
 	public ArrayList<String> getBusinessDeviceToken(String custId);
 
+	public Store getStoreDetails(int storeId);
+	
+	public String getCustomerNameById(int custId);
+
 }

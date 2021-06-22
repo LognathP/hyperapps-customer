@@ -33,5 +33,12 @@ public interface HyperAppsConstants {
 
 	String BUSINESS_ORDER_PLACE_TITLE = "New Order has been placed";
 	String BUSINESS_ORDER_PLACE_BODY = "New Order has been placed by ";
+
+	String ORDER_UPDATE_TITLE = "Order Update";
+	String ORDER_UPDATE_PROCESSED = "Your Order has been Processed Successfully !";
+	String ORDER_UPDATE_CONFIRMED = "Your Order has been Confirmed by Retailer !";
+	String ORDER_UPDATE_COMPLETED = "Your Order has been Completed Successfully !";
+	String ORDER_UPDATE_CANCELLED_BY_CUSTOMER = "Your Order has been Cancelled !";
+	String ORDER_UPDATE_CANCELLED_BY_RETAILER = "Your Order has been Cancelled by Retailer !";
 	
 }

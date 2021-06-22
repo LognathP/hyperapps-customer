@@ -4,12 +4,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -136,6 +139,11 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 			@RequestParam String message) {
 		Logger.info(this.getClass(),"ADD CUSTOMER FEEDBACK API CALL STARTED AT "+dateFormat.format(new Date()));
 		return customerBusiness.sendFeedback(user_id,message);
+	}
+	@GetMapping("/api/profile/store/{storeId}")
+	public Object getStoreDetails(@PathVariable ("storeId") int storeId) {
+		Logger.info(this.getClass(),"GET STORE DETAILS API CALL STARTED AT "+dateFormat.format(new Date()));
+		return customerBusiness.getStoreDetails(storeId);
 	}
 	
 
