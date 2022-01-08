@@ -66,5 +66,7 @@ public interface CustomerService {
 	public Store getStoreDetails(int storeId);
 	
 	public String getCustomerNameById(int custId);
+	
+	public int getStoreDeliveryRadius(int storeId);
 
 }

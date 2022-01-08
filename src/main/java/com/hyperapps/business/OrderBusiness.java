@@ -206,7 +206,7 @@ public class OrderBusiness {
 			if(store.isStoreTimeAvailable())
 			{
 				store = validateDeliveryLocation(store, orderReq);
-				store.setDeliveryAvailable(true);
+				//store.setDeliveryAvailable(true);
 				if(store.isDeliveryAvailable())
 				{
 					if(orderService.placeOrder(orderReq))
@@ -284,13 +284,17 @@ public class OrderBusiness {
 	
 	public Store validateDeliveryLocation(Store store,OrderRequest orderReq) {
 		List<DeliveryAreas> ls = store.getDelivery_areas();
+		int radius = customerService.getStoreDeliveryRadius(store.getStore_id());
 		if(ls.size()>0)
 		{
+			LOGGER.info(this.getClass(),"VALIDATING DELIVERY LOCATION");
 			for (DeliveryAreas areas : ls) {
-				if(CommonUtils.distance(Double.parseDouble(orderReq.getLocation().getLat()),
+				double distance = CommonUtils.distance(Double.parseDouble(orderReq.getLocation().getLat()),
 						Double.parseDouble(orderReq.getLocation().getLng()),
 						Double.parseDouble(areas.getLat()),
-						Double.parseDouble(areas.getLng()),"K")<10)
+						Double.parseDouble(areas.getLng()),"K");
+				LOGGER.info(this.getClass(),"DISTANCE VALUE "+distance);
+				if(distance<radius)
 				{
 					store.setDeliveryAvailable(true);
 				}
@@ -353,71 +357,84 @@ public class OrderBusiness {
 		
 	public void sendNotificationsPlaceOrder(int customer_id)
 	{
-		try {
-			ArrayList<String> tokenArray = new ArrayList<String>();
-				tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
-			LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
-			LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
-			pushNotificationService.sendPushNotificationWithData(tokenArray
-					,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
-			
-			
-			tokenArray = new ArrayList<String>();
-			tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
-			LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
-			LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
-			pushNotificationService.sendPushNotificationWithData(tokenArray
-					,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY +" "+customerService.getCustomerNameById(customer_id), HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
-			
-		} catch (Exception e) {
-			LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN MAIL & PUSH NOTIFICATION");
-			e.printStackTrace();
-		}	
+		new Thread("PUSH NOTIFICATION PLACE ORDER THREAD") {
+			public void run()
+			{
+				try {
+					ArrayList<String> tokenArray = new ArrayList<String>();
+						tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+					LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+					LOGGER.info(getClass(), "CUSTOMER APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+					pushNotificationService.sendPushNotificationWithData(tokenArray
+							,HyperAppsConstants.ORDER_PLACE_BODY, HyperAppsConstants.ORDER_PLACE_TITLE);
+					
+					
+					tokenArray = new ArrayList<String>();
+					tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+					LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+					LOGGER.info(getClass(), "BUSINESS APP NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+					pushNotificationService.sendPushNotificationWithData(tokenArray
+							,HyperAppsConstants.BUSINESS_ORDER_PLACE_BODY +" "+customerService.getCustomerNameById(customer_id), HyperAppsConstants.BUSINESS_ORDER_PLACE_TITLE);
+					
+				} catch (Exception e) {
+					LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN MAIL & PUSH NOTIFICATION");
+					e.printStackTrace();
+				}	
+			}
+		}.start();
+		
 	}
 	
 
 	public void sendNotificationsUpdateOrder(int customer_id,int orderStat)
 	{
-		try {
-			String message = null;
-			switch(orderStat)
+		new Thread("PUSH NOTIFICATION FOR UPDATE ORDER")
+		{
+			public void run()
 			{
-			case 2:
-			message = HyperAppsConstants.ORDER_UPDATE_PROCESSED;
-			break;
-			case 3:
-			message = HyperAppsConstants.ORDER_UPDATE_CONFIRMED;
-			break;
-			case 4:
-			message = HyperAppsConstants.ORDER_UPDATE_COMPLETED;
-			break;
-			case 5:
-			message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_CUSTOMER;
-			break;
-			case 6:
-			message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_RETAILER;
-			break;
+				try {
+					String message = null;
+					switch(orderStat)
+					{
+					case 2:
+					message = HyperAppsConstants.ORDER_UPDATE_PROCESSED;
+					break;
+					case 3:
+					message = HyperAppsConstants.ORDER_UPDATE_CONFIRMED;
+					break;
+					case 4:
+					message = HyperAppsConstants.ORDER_UPDATE_COMPLETED;
+					break;
+					case 5:
+					message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_CUSTOMER;
+					break;
+					case 6:
+					message = HyperAppsConstants.ORDER_UPDATE_CANCELLED_BY_RETAILER;
+					break;
+					}
+				
+					
+					ArrayList<String> tokenArray = new ArrayList<String>();
+						tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
+					LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+					LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+					pushNotificationService.sendPushNotificationWithData(tokenArray
+							,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
+					
+					
+					tokenArray = new ArrayList<String>();
+					tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
+					LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
+					LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
+					pushNotificationService.sendPushNotificationWithData(tokenArray
+							,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
+					
+				} catch (Exception e) {
+					LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN UPDATE ORDER PUSH NOTIFICATION");
+					e.printStackTrace();
+				}	
 			}
+		}.start();
 		
-			
-			ArrayList<String> tokenArray = new ArrayList<String>();
-				tokenArray.add(customerService.getDeviceToken(String.valueOf(customer_id)));
-			LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
-			LOGGER.info(getClass(), "CUSTOMER APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
-			pushNotificationService.sendPushNotificationWithData(tokenArray
-					,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
-			
-			
-			tokenArray = new ArrayList<String>();
-			tokenArray = customerService.getBusinessDeviceToken(String.valueOf(customer_id));
-			LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY SIZE "+tokenArray.size());
-			LOGGER.info(getClass(), "BUSINESS APP UPDATE NOTIFICATION TOKEN ARRAY "+tokenArray.toString());
-			pushNotificationService.sendPushNotificationWithData(tokenArray
-					,message, HyperAppsConstants.ORDER_UPDATE_TITLE);
-			
-		} catch (Exception e) {
-			LOGGER.error(this.getClass(),"EXCEPTION OCCURED IN UPDATE ORDER PUSH NOTIFICATION");
-			e.printStackTrace();
-		}	
 	}
 }

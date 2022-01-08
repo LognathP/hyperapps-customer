@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,10 +43,10 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 	EmailService emailService;
 
 
-	@PostMapping("/api/retailer/customer/login")
-	public Object loginCustomer(@RequestParam String customers_telephone) {
+	@PostMapping("/api/retailer/customer/login/{store_id}")
+	public Object loginCustomer(@RequestParam String customers_telephone,@PathVariable ("store_id") int store_id) {
 		Logger.info(this.getClass(),"LOGIN CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
-		return loginBusiness.loginCustomer(customers_telephone);
+		return loginBusiness.loginCustomer(customers_telephone,store_id);
 	}
 	
 	@PostMapping("/api/retailer/customer/login/check")

@@ -195,9 +195,9 @@ public class CustomerBusiness {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object getCategoryList() {
+	public Object getCategoryList(int store_id) {
 		
-		List<Categories> cList = customerService.getCategories(Integer.parseInt(configProp.getConfigValue("default.storeid")));
+		List<Categories> cList = customerService.getCategories(store_id);
 		if (cList.size() > 0) {
 			LOGGER.info(this.getClass(), "CATEGORIES LISTED SUCCESSFULLY");
 			response.setStatus(HttpStatus.OK.toString());

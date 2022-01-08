@@ -21,7 +21,6 @@ import com.hyperapps.model.PromotionData;
 import com.hyperapps.model.SliderImagesData;
 import com.hyperapps.model.Store;
 import com.hyperapps.model.UserProfile;
-import com.hyperapps.repository.CustomerRepository;
 import com.hyperapps.request.AddAddressRequest;
 
 @Component
@@ -32,10 +31,7 @@ public class CustomerServiceImpl implements CustomerService {
 	
 	@Autowired
 	CustomerDao customerDao;
-	
-	@Autowired
-	CustomerRepository customerRepository;
-	
+		
 	@Autowired
 	CommonData commonData;
 	
@@ -55,7 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public Customer addCustomer(Customer customer) {
 		try {
-			customer = customerRepository.save(customer);
+			customer = customerDao.addCustomer(customer);
 		} catch (Exception e) {
 			LOGGER.error(this.getClass(),"ERROR IN DB WHILE ADDING/UPDATING CUSTOMER "+e.getMessage().toString());
 			e.printStackTrace();
@@ -193,6 +189,12 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public String getCustomerNameById(int custId) {
 		return customerDao.getCustomerNameById(custId);
+	}
+
+
+	@Override
+	public int getStoreDeliveryRadius(int storeId) {
+		return customerDao.getStoreDeliveryRadius(storeId);
 	}
 
 

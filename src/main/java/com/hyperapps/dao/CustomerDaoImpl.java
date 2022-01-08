@@ -54,9 +54,10 @@ public class CustomerDaoImpl implements CustomerDao {
 			connection = jdbctemp.getDataSource().getConnection();
 			preStmt = connection.prepareStatement(CustomerQueryConstants.LOGIN_CUSTOMER_CHECK);
 			preStmt.setString(1, customer.getCustomers_telephone());
+			preStmt.setInt(2, Integer.parseInt(customer.getStore_id()));
 			res = preStmt.executeQuery();
 			if (res.next()) {
-				customer.setId(res.getLong(1));
+				customer.setId(res.getInt(1));
 				LOGGER.info(this.getClass(), "CUSTOMER ALREADY EXISTS - ID:" + customer.getId());
 			}
 
@@ -436,16 +437,15 @@ public class CustomerDaoImpl implements CustomerDao {
 			connection = jdbctemp.getDataSource().getConnection();
 			preStmt = connection.prepareStatement(CustomerQueryConstants.UPDATED_CUSTOMER_PROFILE);
 			preStmt.setString(1, custProf.getCustomers_firstname());
-			preStmt.setString(2, custProf.getCustomers_lastname());
-			preStmt.setString(3, custProf.getCustomers_dob());
-			preStmt.setString(4, custProf.getCustomers_email_address());
-			preStmt.setString(5, custProf.getCustomers_telephone());
-			preStmt.setInt(6, custProf.getCustomers_default_address_id());
-			preStmt.setString(7, custProf.getCustomers_fax());
-			preStmt.setString(8, custProf.getCustomers_password());
-			preStmt.setInt(9, custProf.getCustomers_newsletter());
-			preStmt.setInt(10, Integer.valueOf(custProf.getCustomers_gender()));
-			preStmt.setInt(11, custProf.getId());
+			preStmt.setString(2, custProf.getCustomers_dob());
+			preStmt.setString(3, custProf.getCustomers_email_address());
+			preStmt.setString(4, custProf.getCustomers_telephone());
+			preStmt.setInt(5, custProf.getCustomers_default_address_id());
+			preStmt.setString(6, custProf.getCustomers_fax());
+			preStmt.setString(7, custProf.getCustomers_password());
+			preStmt.setInt(8, custProf.getCustomers_newsletter());
+			preStmt.setInt(9, Integer.valueOf(custProf.getCustomers_gender()));
+			preStmt.setInt(10, custProf.getId());
 			preStmt.executeUpdate();
 			
 		} catch (Exception e) {
@@ -1420,6 +1420,74 @@ public class CustomerDaoImpl implements CustomerDao {
 
 		}
 		return name;
+	}
+
+	@Override
+	public int getStoreDeliveryRadius(int storeId) {
+		Connection connection = null;
+		PreparedStatement preStmt = null;
+		ResultSet res = null;
+		int radius = 0;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.GET_STORE_RADIUS);
+			preStmt.setInt(1, storeId);
+			res = preStmt.executeQuery();
+			if(res.next()) {
+					radius = res.getInt(1);
+			}
+
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE getStoreDeliveryRadius " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB ON getStoreDeliveryRadius " + e.getMessage());
+			}
+
+		}
+		return radius;
+	}
+
+	@Override
+	public Customer addCustomer(Customer customer) {
+		PreparedStatement preStmt = null;
+		Connection connection = null;
+		ResultSet res = null;
+		int id = 0;
+		try {
+			connection = jdbctemp.getDataSource().getConnection();
+			preStmt = connection.prepareStatement(CustomerQueryConstants.CUSOMER_INSERT,new String[] {"id"});
+			preStmt.setString(1, customer.getCustomers_telephone());
+			preStmt.setString(2,customer.getStore_id());
+			
+			int rs = preStmt.executeUpdate();
+			if(rs > 0)
+			{
+				res = preStmt.getGeneratedKeys();
+				if(res.next())
+				{
+					id = res.getInt(1);
+				}
+			}
+			customer.setId(id);
+		} catch (Exception e) {
+			LOGGER.debug(this.getClass(), "ERROR IN DB WHILE addCustomer " + e.getMessage());
+			e.printStackTrace();
+		} 
+		finally {
+			try {
+				CommonUtils.closeDB(connection, res, preStmt);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				LOGGER.error(this.getClass(), "ERROR IN DB WHILE CLOSING DB addCustomer " + e.getMessage());
+			}
+
+		}
+		return customer;
 	}
 
 	

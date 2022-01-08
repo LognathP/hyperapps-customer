@@ -61,10 +61,10 @@ private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:s
 		Logger.info(this.getClass(),"GET ADDRESS CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
 		return customerBusiness.getAddress(customer_id);
 	}
-	@GetMapping("/api/storefront/rootcategory/list")
-	public Object getCategoryList() {
-		Logger.info(this.getClass(),"GET ROOT CATEGORIES CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()));
-		return customerBusiness.getCategoryList();
+	@GetMapping("/api/storefront/rootcategory/list/{store_id}")
+	public Object getCategoryList(@PathVariable ("store_id") int store_id) {
+		Logger.info(this.getClass(),"GET ROOT CATEGORIES CUSTOMER API CALL STARTED AT "+dateFormat.format(new Date()) + " FOR STORE ID :"+store_id);
+		return customerBusiness.getCategoryList(store_id);
 	}
 	
 	@GetMapping("/api/retailer/store/categorytree/{store_id}")

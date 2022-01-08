@@ -76,4 +76,8 @@ public interface CustomerDao {
 
 	public String getCustomerNameById(int custId);
 
+	public int getStoreDeliveryRadius(int storeId);
+
+	public Customer addCustomer(Customer customer);
+
 	}

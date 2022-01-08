@@ -10,6 +10,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import com.hyperapps.model.OfferHistoryData;
+import com.hyperapps.util.CommonUtils;
+import com.hyperapps.util.DESEncryptor;
 
 @Configuration
 @PropertySource("classpath:/application.properties")
@@ -34,10 +36,10 @@ public class Test {
 	}
 	public static void main(String[] args) throws Exception {
 		
-			new Test().smsTest();
-//		System.out.println(DESEncryptor.encrypt("Test@123", "hyperapp123"));
+			//new Test().smsTest();
+	System.out.println(DESEncryptor.encrypt("Test@123", "hyperapp123"));
 //		String en = DESEncryptor.encrypt("Test@123", "hyperapp123");
-//		System.out.println(DESEncryptor.decrypt(en, "hyperapp123"));
+		System.out.println(DESEncryptor.decrypt("Lk1M8rkskrx0mc3pbrWzYQ==", "hyperapp123"));
 //		Gson gson = new Gson(); 
 //		//String userJson = "[{\"name\":\"Chennai\",\"lat\":\"12.920423\",\"long\":\"80.097207\",\"address\":\"51, Ramani Nagar, West Tambaram, Chennai, Tamilnadu - 600045, India\"}]";
 //		String userJson = "[{\"phone\": \"8888888888\"},{\"phone\": \"9952175446\"},{\"phone\": \"9952175444\"}]";
@@ -132,13 +134,15 @@ public class Test {
 //	assert age <= 19 : "Cannot";
 //	System.out.println(age);
 			
-	List<Integer> i = new ArrayList<Integer>();
-	i.add(1);
-	i.add(2);
-	i.add(3);
-	
-	System.out.println(i.toString().replace("[", "(").replace("]", ")"));
-			
+//	List<Integer> i = new ArrayList<Integer>();
+//	i.add(1);
+//	i.add(2);
+//	i.add(3);
+//	
+//	System.out.println(i.toString().replace("[", "(").replace("]", ")"));
+//			
+//	
+			//System.out.println(CommonUtils.distance(17.3445533, 78.4938407, 17.456371871317938, 78.44719758465853, "K"));
 			
 	}
 }

@@ -48,15 +48,15 @@ public class LoginBusiness {
 	
 	
 	@SuppressWarnings("unchecked")
-	public Object loginCustomer(String mobileNum)
+	public Object loginCustomer(String mobileNum, int store_id)
 	{
 		LOGGER.info(this.getClass(),"LOGIN CUSTOMER BUSINESS LAYER");
 		Customer customer = new Customer();
 		customer.setCustomers_telephone(mobileNum);
 		customer.setCustomer_type(String.valueOf(HyperAppsConstants.CUSTOMER_USER));
-		customer.setStore_id(configProp.getConfigValue("default.storeid"));
+		customer.setStore_id(String.valueOf(store_id));
 		customer = customerService.checkCustomer(customer);
-		if(customer.getId() == null)
+		if(customer.getId() == 0)
 		{
 			LOGGER.info(this.getClass(),"ADDING NEW CUSTOMER");
 			customer = customerService.addCustomer(customer);

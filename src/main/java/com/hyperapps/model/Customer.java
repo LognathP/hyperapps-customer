@@ -1,10 +1,14 @@
 package com.hyperapps.model;
 
+import java.sql.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.springframework.data.annotation.CreatedDate;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,21 +17,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Entity
-@Table (name = "customers")
 public class Customer {
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	Long id;
+	
+	int id;
     public String store_id;
     public String custom_message;
     public String customer_type;
     public String enable;
     public String type;
     public String otp;
-    public String updated_at;
-    public String created_at;
+    public Date updated_at;
+    public Date created_at;
     public String customers_newsletter;
     public String customers_password;
     public String customers_fax;
